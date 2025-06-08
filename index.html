@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Checklist & Budget Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      padding: 1rem;
+    }
+    h2 {
+      margin-top: 2rem;
+      color: #2c3e50;
+    }
+    .section {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+    }
+    .task, .expense, .log-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .task input[type="checkbox"], .expense input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 0.5rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      margin: 0.3rem 0;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      cursor: pointer;
+      background: #3498db;
+      color: white;
+      border: none;
+    }
+    .summary {
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
+    .delete-btn {
+      background: #e74c3c;
+      border: none;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      margin-left: 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .log-details {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background-color: #f0f3f7;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>My Daily Dashboard</h1>
+
+  <div class="section">
+    <h2>Daily Checklist</h2>
+    <div id="taskList"></div>
+    <input type="text" id="newTask" placeholder="Add new task" />
+    <button onclick="addTask()">Add Task</button>
+  </div>
+
+  <div class="section">
+    <h2>Budget Tracker</h2>
+    <input type="number" id="dailyBudget" placeholder="Set Daily Budget" />
+    <input type="number" id="monthlyBudget" placeholder="Set Monthly Budget" />
+    <div id="expenseList"></div>
+    <input type="text" id="expenseName" placeholder="Expense name" />
+    <input type="number" id="expenseAmount" placeholder="Amount" />
+    <button onclick="addExpense()">Add Expense</button>
+    <div class="summary" id="budgetSummary"></div>
+  </div>
+
+  <div class="section">
+    <h2>Daily Logs</h2>
+    <button onclick="clearLogs()">Clear All Logs</button>
+    <div id="logs"></div>
+  </div>
+
+  <script>
+    const today = new Date().toISOString().split('T')[0];
+
+    const getData = (key) => JSON.parse(localStorage.getItem(key + '_' + today)) || [];
+    const saveData = (key, data) => localStorage.setItem(key + '_' + today, JSON.stringify(data));
+
+    let tasks = getData('tasks');
+    let expenses = getData('expenses');
+    let logs = JSON.parse(localStorage.getItem('logs')) || {};
+    let budget = JSON.parse(localStorage.getItem('budget')) || { daily: 0, monthly: 0 };
+
+    logs[today] = logs[today] || { tasks: [], expenses: [] };
+
+    document.getElementById('dailyBudget').value = budget.daily || '';
+    document.getElementById('monthlyBudget').value = budget.monthly || '';
+
+    const renderTasks = () => {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      tasks.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.className = 'task';
+        div.innerHTML = `<div><input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask(${i})">${t.name}</div>
+                          <button class="delete-btn" onclick="deleteTask(${i})">X</button>`;
+        list.appendChild(div);
+      });
+    };
+
+    const renderExpenses = () => {
+      const list = document.getElementById('expenseList');
+      list.innerHTML = '';
+      expenses.forEach((e, i) => {
+        const div = document.createElement('div');
+        div.className = 'expense';
+        div.innerHTML = `<div><input type="checkbox" ${e.done ? 'checked' : ''} onclick="toggleExpense(${i})">${e.name} - ₹<input type="number" value="${e.amount}" onchange="editExpenseAmount(${i}, this.value)"></div>
+                          <button class="delete-btn" onclick="deleteExpense(${i})">X</button>`;
+        list.appendChild(div);
+      });
+      updateBudgetSummary();
+    };
+
+    const renderLogs = () => {
+      const logDiv = document.getElementById('logs');
+      logDiv.innerHTML = '';
+      Object.keys(logs).sort().reverse().forEach(date => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        const detailId = `log-details-${date}`;
+        item.innerHTML = `<div><strong>${date}</strong><br>Tasks: ${logs[date].tasks.length}, Expenses: ${logs[date].expenses.length}</div>
+                          <div>
+                            <button onclick="toggleLogDetails('${detailId}')">View Log</button>
+                            <button class="delete-btn" onclick="deleteLog('${date}')">Delete</button>
+                          </div>
+                          <div id="${detailId}" class="log-details" style="display: none;"></div>`;
+        logDiv.appendChild(item);
+      });
+    };
+
+    const toggleLogDetails = (id) => {
+      const detailDiv = document.getElementById(id);
+      if (detailDiv.style.display === 'none') {
+        const date = id.replace('log-details-', '');
+        const log = logs[date];
+        const taskList = log.tasks.map(t => `<li>${t.name} ${t.done ? '(Done)' : ''}</li>`).join('');
+        const expenseList = log.expenses.map(e => `<li>${e.name} - ₹${e.amount} ${e.done ? '(Done)' : ''}</li>`).join('');
+        detailDiv.innerHTML = `<strong>Tasks:</strong><ul>${taskList}</ul><strong>Expenses:</strong><ul>${expenseList}</ul>`;
+        detailDiv.style.display = 'block';
+      } else {
+        detailDiv.style.display = 'none';
+      }
+    };
+
+    const addTask = () => {
+      const val = document.getElementById('newTask').value;
+      if (val) tasks.push({ name: val, done: false });
+      logs[today].tasks = tasks;
+      saveData('tasks', tasks);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      document.getElementById('newTask').value = '';
+      renderTasks();
+      renderLogs();
+    };
+
+    const toggleTask = (i) => {
+      tasks[i].done = !tasks[i].done;
+      logs[today].tasks = tasks;
+      saveData('tasks', tasks);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderTasks();
+      renderLogs();
+    };
+
+    const deleteTask = (i) => {
+      tasks.splice(i, 1);
+      logs[today].tasks = tasks;
+      saveData('tasks', tasks);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderTasks();
+      renderLogs();
+    };
+
+    const addExpense = () => {
+      const name = document.getElementById('expenseName').value;
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+      if (name && !isNaN(amount)) expenses.push({ name, amount, done: false });
+      logs[today].expenses = expenses;
+      saveData('expenses', expenses);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      document.getElementById('expenseName').value = '';
+      document.getElementById('expenseAmount').value = '';
+      renderExpenses();
+      renderLogs();
+    };
+
+    const toggleExpense = (i) => {
+      expenses[i].done = !expenses[i].done;
+      logs[today].expenses = expenses;
+      saveData('expenses', expenses);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderExpenses();
+      renderLogs();
+    };
+
+    const editExpenseAmount = (i, val) => {
+      expenses[i].amount = parseFloat(val);
+      logs[today].expenses = expenses;
+      saveData('expenses', expenses);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderExpenses();
+      renderLogs();
+    };
+
+    const deleteExpense = (i) => {
+      expenses.splice(i, 1);
+      logs[today].expenses = expenses;
+      saveData('expenses', expenses);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderExpenses();
+      renderLogs();
+    };
+
+    document.getElementById('dailyBudget').addEventListener('change', (e) => {
+      budget.daily = parseFloat(e.target.value);
+      localStorage.setItem('budget', JSON.stringify(budget));
+      updateBudgetSummary();
+    });
+
+    document.getElementById('monthlyBudget').addEventListener('change', (e) => {
+      budget.monthly = parseFloat(e.target.value);
+      localStorage.setItem('budget', JSON.stringify(budget));
+      updateBudgetSummary();
+    });
+
+    const updateBudgetSummary = () => {
+      const spentToday = expenses.filter(e => e.done).reduce((sum, e) => sum + e.amount, 0);
+      const remainingDaily = (budget.daily - spentToday).toFixed(2);
+      const remainingMonthly = (budget.monthly - spentToday).toFixed(2);
+      document.getElementById('budgetSummary').textContent =
+        `Spent Today: ₹${spentToday.toFixed(2)} | Remaining Daily: ₹${remainingDaily} | Remaining Monthly: ₹${remainingMonthly}`;
+    };
+
+    const deleteLog = (date) => {
+      delete logs[date];
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderLogs();
+    };
+
+    const clearLogs = () => {
+      if (confirm('Are you sure you want to delete all logs?')) {
+        localStorage.removeItem('logs');
+        logs = {};
+        renderLogs();
+      }
+    };
+
+    renderTasks();
+    renderExpenses();
+    renderLogs();
+  </script>
+</body>
+</html>
