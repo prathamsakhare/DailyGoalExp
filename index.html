@@ -1,316 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily Checklist & Budget Tracker</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      padding: 1rem;
-    }
-    h1 {
-      font-size: 1.5rem;
-      text-align: center;
-    }
-    h2 {
-      margin-top: 1.5rem;
-      color: #2c3e50;
-      font-size: 1.25rem;
-    }
-    .section {
-      background: #fff;
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-      margin-bottom: 1.5rem;
-    }
-    .task, .expense, .log-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .task input[type="checkbox"], .expense input[type="checkbox"] {
-      transform: scale(1.2);
-      margin-right: 0.5rem;
-    }
-    input, button {
-      padding: 0.5rem;
-      margin: 0.3rem 0;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      width: 100%;
-      max-width: 100%;
-    }
-    button {
-      cursor: pointer;
-      background: #3498db;
-      color: white;
-      border: none;
-    }
-    button:active {
-      transform: scale(0.98);
-    }
-    .summary {
-      font-weight: bold;
-      margin-top: 0.5rem;
-    }
-    .delete-btn {
-      background: #e74c3c;
-      border: none;
-      color: white;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .log-details {
-      margin-top: 0.5rem;
-      padding: 0.5rem;
-      background-color: #f0f3f7;
-      border-radius: 6px;
-    }
-    .reorder-btn {
-      background: #f39c12;
-      padding: 0.2rem 0.5rem;
-    }
-    @media (min-width: 480px) {
-      input, button {
-        width: auto;
-      }
-    }
-  </style>
-</head>
-<body>
-  <h1>My Daily Dashboard</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 text-gray-800 p-4">
+    <div
+      class="max-w-3xl mx-auto bg-white shadow-lg rounded-xl overflow-hidden"
+    >
+      <div
+        class="bg-blue-600 text-white text-center py-4 text-xl font-semibold"
+      >
+        My Daily Dashboard
+      </div>
 
-  <div class="section">
-    <h2>Daily Checklist</h2>
-    <div id="taskList"></div>
-    <input type="text" id="newTask" placeholder="Add new task" />
-    <button onclick="addTask()">Add Task</button>
-  </div>
+      <!-- Tabs -->
+      <div class="flex justify-around bg-gray-100 p-2">
+        <button
+          class="tab-btn px-4 py-2 rounded-md bg-blue-100"
+          onclick="switchTab('checklist')"
+        >
+          Checklist
+        </button>
+        <button
+          class="tab-btn px-4 py-2 rounded-md"
+          onclick="switchTab('budget')"
+        >
+          Budget
+        </button>
+        <button
+          class="tab-btn px-4 py-2 rounded-md"
+          onclick="switchTab('logs')"
+        >
+          Logs
+        </button>
+      </div>
 
-  <div class="section">
-    <h2>Budget Tracker</h2>
-    <input type="number" id="dailyBudget" placeholder="Set Daily Budget" />
-    <input type="number" id="monthlyBudget" placeholder="Set Monthly Budget" />
-    <div id="expenseList"></div>
-    <input type="text" id="expenseName" placeholder="Expense name" />
-    <input type="number" id="expenseAmount" placeholder="Amount" />
-    <button onclick="addExpense()">Add Expense</button>
-    <div class="summary" id="budgetSummary"></div>
-  </div>
+      <!-- Checklist Section -->
+      <div id="checklist" class="tab-section p-4">
+        <h2 class="text-lg font-semibold mb-2">Daily Checklist</h2>
+        <div id="taskList" class="space-y-2"></div>
+        <div class="mt-4">
+          <input
+            type="text"
+            id="newTask"
+            placeholder="Add new task"
+            class="w-full p-2 border rounded-md"
+          />
+          <button
+            onclick="addTask()"
+            class="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+          >
+            Add Task
+          </button>
+        </div>
+      </div>
 
-  <div class="section">
-    <h2>Daily Logs</h2>
-    <button onclick="clearLogs()">Clear All Logs</button>
-    <div id="logs"></div>
-  </div>
+      <!-- Budget Section -->
+      <div id="budget" class="tab-section p-4 hidden">
+        <h2 class="text-lg font-semibold mb-2">Budget Tracker</h2>
+        <input
+          type="number"
+          id="dailyBudget"
+          placeholder="Set Daily Budget"
+          class="w-full p-2 mb-2 border rounded-md"
+        />
+        <input
+          type="number"
+          id="monthlyBudget"
+          placeholder="Set Monthly Budget"
+          class="w-full p-2 mb-4 border rounded-md"
+        />
+        <div id="expenseList" class="space-y-2"></div>
+        <div class="mt-4">
+          <input
+            type="text"
+            id="expenseName"
+            placeholder="Expense name"
+            class="w-full p-2 border rounded-md mb-2"
+          />
+          <input
+            type="number"
+            id="expenseAmount"
+            placeholder="Amount"
+            class="w-full p-2 border rounded-md mb-2"
+          />
+          <button
+            onclick="addExpense()"
+            class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+          >
+            Add Expense
+          </button>
+        </div>
+        <div
+          class="summary mt-4 text-sm text-gray-700"
+          id="budgetSummary"
+        ></div>
+      </div>
 
-  <script>
-    const today = new Date().toISOString().split('T')[0];
+      <!-- Logs Section -->
+      <div id="logs" class="tab-section p-4 hidden">
+        <h2 class="text-lg font-semibold mb-2">Daily Logs</h2>
+        <button
+          onclick="clearLogs()"
+          class="mb-4 bg-red-500 text-white py-2 w-full rounded-md hover:bg-red-600"
+        >
+          Clear All Logs
+        </button>
+        <div id="logList" class="space-y-4"></div>
+      </div>
+    </div>
 
-    const getData = (key) => JSON.parse(localStorage.getItem(key + '_' + today)) || [];
-    const saveData = (key, data) => localStorage.setItem(key + '_' + today, JSON.stringify(data));
+    <script>
+      const today = new Date().toISOString().split("T")[0];
+      const getData = (key) =>
+        JSON.parse(localStorage.getItem(key + "_" + today)) || [];
+      const saveData = (key, data) =>
+        localStorage.setItem(key + "_" + today, JSON.stringify(data));
 
-    let tasks = getData('tasks');
-    let expenses = getData('expenses');
-    let logs = JSON.parse(localStorage.getItem('logs')) || {};
-    let budget = JSON.parse(localStorage.getItem('budget')) || { daily: 0, monthly: 0 };
+      let tasks = getData("tasks");
+      let expenses = getData("expenses");
+      let logs = JSON.parse(localStorage.getItem("logs")) || {};
+      let budget = JSON.parse(localStorage.getItem("budget")) || {
+        daily: 0,
+        monthly: 0,
+      };
+      logs[today] = logs[today] || { tasks: [], expenses: [] };
 
-    logs[today] = logs[today] || { tasks: [], expenses: [] };
+      document.getElementById("dailyBudget").value = budget.daily || "";
+      document.getElementById("monthlyBudget").value = budget.monthly || "";
 
-    document.getElementById('dailyBudget').value = budget.daily || '';
-    document.getElementById('monthlyBudget').value = budget.monthly || '';
+      const renderTasks = () => {
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+        tasks.forEach((t, i) => {
+          const div = document.createElement("div");
+          div.className =
+            "flex justify-between items-center bg-gray-50 p-2 rounded-md border";
+          div.innerHTML = `
+            <div class="flex items-center gap-2">
+              <input type="checkbox" ${
+                t.done ? "checked" : ""
+              } onclick="toggleTask(${i})" />
+              <span class="${t.done ? "line-through text-gray-500" : ""}">${
+            t.name
+          }</span>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="moveTask(${i}, -1)" class="text-sm text-yellow-500">↑</button>
+              <button onclick="moveTask(${i}, 1)" class="text-sm text-yellow-500">↓</button>
+              <button onclick="deleteTask(${i})" class="text-sm text-red-600">X</button>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+      };
 
-    const renderTasks = () => {
-      const list = document.getElementById('taskList');
-      list.innerHTML = '';
-      tasks.forEach((t, i) => {
-        const div = document.createElement('div');
-        div.className = 'task';
-        div.innerHTML = `<div style="flex:1"><input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask(${i})">${t.name}</div>
-                          <div>
-                            <button class="delete-btn" onclick="deleteTask(${i})">X</button>
-                            <button class="reorder-btn" onclick="moveTask(${i}, -1)">↑</button>
-                            <button class="reorder-btn" onclick="moveTask(${i}, 1)">↓</button>
-                          </div>`;
-        list.appendChild(div);
-      });
-    };
+      const renderExpenses = () => {
+        const list = document.getElementById("expenseList");
+        list.innerHTML = "";
+        expenses.forEach((e, i) => {
+          const div = document.createElement("div");
+          div.className =
+            "flex justify-between items-center bg-gray-50 p-2 rounded-md border";
+          div.innerHTML = `
+            <div class="flex items-center gap-2 flex-wrap">
+              <input type="checkbox" ${
+                e.done ? "checked" : ""
+              } onclick="toggleExpense(${i})" />
+              <span>${e.name} - ₹</span>
+              <input type="number" class="border px-1 w-24" value="${
+                e.amount
+              }" onchange="editExpenseAmount(${i}, this.value)" />
+            </div>
+            <div class="flex gap-2">
+              <button onclick="moveExpense(${i}, -1)" class="text-sm text-yellow-500">↑</button>
+              <button onclick="moveExpense(${i}, 1)" class="text-sm text-yellow-500">↓</button>
+              <button onclick="deleteExpense(${i})" class="text-sm text-red-600">X</button>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+        updateBudgetSummary();
+      };
 
-    const addExpense = () => {
-      const name = document.getElementById('expenseName').value;
-      const amount = parseFloat(document.getElementById('expenseAmount').value);
-      if (name && !isNaN(amount)) expenses.push({ name, amount, done: false });
-      logs[today].expenses = expenses;
-      saveData('expenses', expenses);
-      localStorage.setItem('logs', JSON.stringify(logs));
-      document.getElementById('expenseName').value = '';
-      document.getElementById('expenseAmount').value = '';
-      renderExpenses();
-      renderLogs();
-    };
+      const renderLogs = () => {
+        const logDiv = document.getElementById("logList");
+        logDiv.innerHTML = "";
+        Object.keys(logs)
+          .sort()
+          .reverse()
+          .forEach((date) => {
+            const detailId = `log-details-${date}`;
+            const item = document.createElement("div");
+            item.className = "border p-3 rounded-md bg-gray-50";
+            item.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <div><strong>${date}</strong> | Tasks: ${
+              logs[date].tasks.length
+            }, Expenses: ${logs[date].expenses.length}</div>
+              <div class="flex gap-2">
+                <button onclick="toggleLogDetails('${detailId}')" class="text-blue-600 text-sm">View Log</button>
+                <button onclick="deleteLog('${date}')" class="text-red-600 text-sm">Delete</button>
+              </div>
+            </div>
+            <div id="${detailId}" class="text-sm text-gray-700 hidden">
+              <div><strong>Tasks:</strong> ${logs[date].tasks
+                .map((t) => t.name)
+                .join(", ")}</div>
+              <div><strong>Expenses:</strong> ${logs[date].expenses
+                .map((e) => `${e.name} ₹${e.amount}`)
+                .join(", ")}</div>
+            </div>
+          `;
+            logDiv.appendChild(item);
+          });
+      };
 
-    const toggleExpense = (i) => {
-      expenses[i].done = !expenses[i].done;
-      logs[today].expenses = expenses;
-      saveData('expenses', expenses);
-      localStorage.setItem('logs', JSON.stringify(logs));
-      renderExpenses();
-      renderLogs();
-    };
-
-    const editExpenseAmount = (i, val) => {
-      expenses[i].amount = parseFloat(val);
-      logs[today].expenses = expenses;
-      saveData('expenses', expenses);
-      localStorage.setItem('logs', JSON.stringify(logs));
-      renderExpenses();
-      renderLogs();
-    };
-
-    const deleteExpense = (i) => {
-      expenses.splice(i, 1);
-      logs[today].expenses = expenses;
-      saveData('expenses', expenses);
-      localStorage.setItem('logs', JSON.stringify(logs));
-      renderExpenses();
-      renderLogs();
-    };
-
-    document.getElementById('dailyBudget').addEventListener('change', (e) => {
-      budget.daily = parseFloat(e.target.value);
-      localStorage.setItem('budget', JSON.stringify(budget));
-      updateBudgetSummary();
-    });
-
-    document.getElementById('monthlyBudget').addEventListener('change', (e) => {
-      budget.monthly = parseFloat(e.target.value);
-      localStorage.setItem('budget', JSON.stringify(budget));
-      updateBudgetSummary();
-    });
-
-    const renderExpenses = () => {
-      const list = document.getElementById('expenseList');
-      list.innerHTML = '';
-      expenses.forEach((e, i) => {
-        const div = document.createElement('div');
-        div.className = 'expense';
-        div.innerHTML = `<div style="flex:1"><input type="checkbox" ${e.done ? 'checked' : ''} onclick="toggleExpense(${i})">${e.name} - ₹<input type="number" value="${e.amount}" onchange="editExpenseAmount(${i}, this.value)"></div>
-                          <div>
-                            <button class="delete-btn" onclick="deleteExpense(${i})">X</button>
-                            <button class="reorder-btn" onclick="moveExpense(${i}, -1)">↑</button>
-                            <button class="reorder-btn" onclick="moveExpense(${i}, 1)">↓</button>
-                          </div>`;
-        list.appendChild(div);
-      });
-      updateBudgetSummary();
-    };
-
-    const updateBudgetSummary = () => {
-      const spentToday = expenses.filter(e => e.done).reduce((sum, e) => sum + e.amount, 0);
-      const remainingDaily = (budget.daily - spentToday).toFixed(2);
-      const remainingMonthly = (budget.monthly - spentToday).toFixed(2);
-      document.getElementById('budgetSummary').textContent =
-        `Spent Today: ₹${spentToday.toFixed(2)} | Remaining Daily: ₹${remainingDaily} | Remaining Monthly: ₹${remainingMonthly}`;
-    };
-
-    const moveTask = (index, direction) => {
-      const newIndex = index + direction;
-      if (newIndex >= 0 && newIndex < tasks.length) {
-        [tasks[index], tasks[newIndex]] = [tasks[newIndex], tasks[index]];
+      // Utility functions (add/delete/toggle/move for tasks + expenses)
+      const addTask = () => {
+        const val = document.getElementById("newTask").value;
+        if (val) tasks.push({ name: val, done: false });
         logs[today].tasks = tasks;
-        saveData('tasks', tasks);
-        localStorage.setItem('logs', JSON.stringify(logs));
+        saveData("tasks", tasks);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        document.getElementById("newTask").value = "";
         renderTasks();
-      }
-    };
-
-    const moveExpense = (index, direction) => {
-      const newIndex = index + direction;
-      if (newIndex >= 0 && newIndex < expenses.length) {
-        [expenses[index], expenses[newIndex]] = [expenses[newIndex], expenses[index]];
-        logs[today].expenses = expenses;
-        saveData('expenses', expenses);
-        localStorage.setItem('logs', JSON.stringify(logs));
-        renderExpenses();
-      }
-    };
-
-    const addTask = () => {
-      const val = document.getElementById('newTask').value;
-      if (val) tasks.push({ name: val, done: false });
-      logs[today].tasks = tasks;
-      saveData('tasks', tasks);
-      localStorage.setItem('logs', JSON.stringify(logs));
-      document.getElementById('newTask').value = '';
-      renderTasks();
-      renderLogs(); // Add commentMore actions
-    };
-
-    const deleteTask = (i) => {
-      tasks.splice(i, 1);
-      logs[today].tasks = tasks;
-      saveData('tasks', tasks);
-      localStorage.setItem('logs', JSON.stringify(logs)); // Add commentMore actions
-      renderTasks();
-      renderLogs();
-    };
-
-    const renderLogs = () => {
-      const logDiv = document.getElementById('logs'); //Add commentMore actions
-      logDiv.innerHTML = '';
-      Object.keys(logs).sort().reverse().forEach(date => {
-        const item = document.createElement('div');
-        item.className = 'log-item';
-        const detailId = `log-details-${date}`;
-        item.innerHTML = `<div><strong>${date}</strong><br>Tasks: ${logs[date].tasks.length}, Expenses: ${logs[date].expenses.length}</div>
-                          <div>
-                            <button onclick="toggleLogDetails('${detailId}')">View Log</button>
-                            <button class="delete-btn" onclick="deleteLog('${date}')">Delete</button>
-                          </div>
-                          <div id="${detailId}" class="log-details" style="display: none;"></div>`;
-        logDiv.appendChild(item);
-      });
-    };
-
-    const toggleTask = (i) => {
-      tasks[i].done = !tasks[i].done;
-      logs[today].tasks = tasks;
-      saveData('tasks', tasks);
-      localStorage.setItem('logs', JSON.stringify(logs));
-      renderTasks();
-      renderLogs();
-    };
-
-    const deleteLog = (date) => {
-      delete logs[date];
-      localStorage.setItem('logs', JSON.stringify(logs));
-      renderLogs();
-    };
-
-    const clearLogs = () => {
-      if (confirm('Are you sure you want to delete all logs?')) {
-        localStorage.removeItem('logs');
-        logs = {};
         renderLogs();
-      }
-    };
+      };
+      const toggleTask = (i) => {
+        tasks[i].done = !tasks[i].done;
+        logs[today].tasks = tasks;
+        saveData("tasks", tasks);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        renderTasks();
+        renderLogs();
+      };
+      const deleteTask = (i) => {
+        tasks.splice(i, 1);
+        logs[today].tasks = tasks;
+        saveData("tasks", tasks);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        renderTasks();
+        renderLogs();
+      };
+      const moveTask = (i, d) => {
+        const ni = i + d;
+        if (ni >= 0 && ni < tasks.length)
+          [tasks[i], tasks[ni]] = [tasks[ni], tasks[i]];
+        logs[today].tasks = tasks;
+        saveData("tasks", tasks);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        renderTasks();
+      };
 
-    renderTasks();
-    renderExpenses();
-    renderLogs();
-  </script>
-</body>
+      const addExpense = () => {
+        const name = document.getElementById("expenseName").value;
+        const amount = parseFloat(
+          document.getElementById("expenseAmount").value
+        );
+        if (name && !isNaN(amount))
+          expenses.push({ name, amount, done: false });
+        logs[today].expenses = expenses;
+        saveData("expenses", expenses);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        document.getElementById("expenseName").value = "";
+        document.getElementById("expenseAmount").value = "";
+        renderExpenses();
+        renderLogs();
+      };
+      const toggleExpense = (i) => {
+        expenses[i].done = !expenses[i].done;
+        logs[today].expenses = expenses;
+        saveData("expenses", expenses);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        renderExpenses();
+        renderLogs();
+      };
+      const editExpenseAmount = (i, val) => {
+        expenses[i].amount = parseFloat(val);
+        logs[today].expenses = expenses;
+        saveData("expenses", expenses);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        renderExpenses();
+        renderLogs();
+      };
+      const deleteExpense = (i) => {
+        expenses.splice(i, 1);
+        logs[today].expenses = expenses;
+        saveData("expenses", expenses);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        renderExpenses();
+        renderLogs();
+      };
+      const moveExpense = (i, d) => {
+        const ni = i + d;
+        if (ni >= 0 && ni < expenses.length)
+          [expenses[i], expenses[ni]] = [expenses[ni], expenses[i]];
+        logs[today].expenses = expenses;
+        saveData("expenses", expenses);
+        localStorage.setItem("logs", JSON.stringify(logs));
+        renderExpenses();
+      };
+
+      const updateBudgetSummary = () => {
+        const spentToday = expenses
+          .filter((e) => e.done)
+          .reduce((sum, e) => sum + e.amount, 0);
+        const remainingDaily = (budget.daily - spentToday).toFixed(2);
+        const remainingMonthly = (budget.monthly - spentToday).toFixed(2);
+        document.getElementById(
+          "budgetSummary"
+        ).textContent = `Spent Today: ₹${spentToday.toFixed(
+          2
+        )} | Remaining Daily: ₹${remainingDaily} | Remaining Monthly: ₹${remainingMonthly}`;
+      };
+      document.getElementById("dailyBudget").addEventListener("change", (e) => {
+        budget.daily = parseFloat(e.target.value);
+        localStorage.setItem("budget", JSON.stringify(budget));
+        updateBudgetSummary();
+      });
+      document
+        .getElementById("monthlyBudget")
+        .addEventListener("change", (e) => {
+          budget.monthly = parseFloat(e.target.value);
+          localStorage.setItem("budget", JSON.stringify(budget));
+          updateBudgetSummary();
+        });
+
+      const deleteLog = (date) => {
+        delete logs[date];
+        localStorage.setItem("logs", JSON.stringify(logs));
+        renderLogs();
+      };
+      const clearLogs = () => {
+        if (confirm("Delete all logs?")) {
+          localStorage.removeItem("logs");
+          logs = {};
+          renderLogs();
+        }
+      };
+      const toggleLogDetails = (id) => {
+        const el = document.getElementById(id);
+        el.style.display =
+          el.style.display === "none" || !el.style.display ? "block" : "none";
+      };
+
+      const switchTab = (id) => {
+        document
+          .querySelectorAll(".tab-section")
+          .forEach((el) => el.classList.add("hidden"));
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((btn) => btn.classList.remove("bg-blue-100"));
+        document.getElementById(id).classList.remove("hidden");
+        event.target.classList.add("bg-blue-100");
+      };
+
+      renderTasks();
+      renderExpenses();
+      renderLogs();
+    </script>
+  </body>
 </html>
