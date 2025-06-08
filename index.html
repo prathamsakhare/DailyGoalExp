@@ -219,10 +219,11 @@
     };
 
     const updateBudgetSummary = () => {
-      const summary = document.getElementById('budgetSummary');
-      const spent = expenses.filter(e => e.done).reduce((sum, e) => sum + Number(e.amount), 0);
-      const saved = budget.daily - spent;
-      summary.textContent = `Spent: ₹${spent} / ₹${budget.daily} | Saved: ₹${saved}`;
+      const spentToday = expenses.filter(e => e.done).reduce((sum, e) => sum + e.amount, 0);
+      const remainingDaily = (budget.daily - spentToday).toFixed(2);
+      const remainingMonthly = (budget.monthly - spentToday).toFixed(2);
+      document.getElementById('budgetSummary').textContent =
+        `Spent Today: ₹${spentToday.toFixed(2)} | Remaining Daily: ₹${remainingDaily} | Remaining Monthly: ₹${remainingMonthly}`;
     };
 
     const moveTask = (index, direction) => {
