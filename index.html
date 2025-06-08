@@ -149,6 +149,58 @@
       });
     };
 
+    const addExpense = () => {
+      const name = document.getElementById('expenseName').value;
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+      if (name && !isNaN(amount)) expenses.push({ name, amount, done: false });
+      logs[today].expenses = expenses;
+      saveData('expenses', expenses);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      document.getElementById('expenseName').value = '';
+      document.getElementById('expenseAmount').value = '';
+      renderExpenses();
+      renderLogs();
+    };
+
+    const toggleExpense = (i) => {
+      expenses[i].done = !expenses[i].done;
+      logs[today].expenses = expenses;
+      saveData('expenses', expenses);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderExpenses();
+      renderLogs();
+    };
+
+    const editExpenseAmount = (i, val) => {
+      expenses[i].amount = parseFloat(val);
+      logs[today].expenses = expenses;
+      saveData('expenses', expenses);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderExpenses();
+      renderLogs();
+    };
+
+    const deleteExpense = (i) => {
+      expenses.splice(i, 1);
+      logs[today].expenses = expenses;
+      saveData('expenses', expenses);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderExpenses();
+      renderLogs();
+    };
+
+    document.getElementById('dailyBudget').addEventListener('change', (e) => {
+      budget.daily = parseFloat(e.target.value);
+      localStorage.setItem('budget', JSON.stringify(budget));
+      updateBudgetSummary();
+    });
+
+    document.getElementById('monthlyBudget').addEventListener('change', (e) => {
+      budget.monthly = parseFloat(e.target.value);
+      localStorage.setItem('budget', JSON.stringify(budget));
+      updateBudgetSummary();
+    });
+
     const renderExpenses = () => {
       const list = document.getElementById('expenseList');
       list.innerHTML = '';
@@ -230,6 +282,29 @@
                           <div id="${detailId}" class="log-details" style="display: none;"></div>`;
         logDiv.appendChild(item);
       });
+    };
+
+    const toggleTask = (i) => {
+      tasks[i].done = !tasks[i].done;
+      logs[today].tasks = tasks;
+      saveData('tasks', tasks);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderTasks();
+      renderLogs();
+    };
+
+    const deleteLog = (date) => {
+      delete logs[date];
+      localStorage.setItem('logs', JSON.stringify(logs));
+      renderLogs();
+    };
+
+    const clearLogs = () => {
+      if (confirm('Are you sure you want to delete all logs?')) {
+        localStorage.removeItem('logs');
+        logs = {};
+        renderLogs();
+      }
     };
 
     renderTasks();
