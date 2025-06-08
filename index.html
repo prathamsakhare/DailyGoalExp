@@ -195,8 +195,32 @@
       }
     };
 
+    const addTask = () => {
+      const val = document.getElementById('newTask').value;
+      if (val) tasks.push({ name: val, done: false });
+      logs[today].tasks = tasks;
+      saveData('tasks', tasks);
+      localStorage.setItem('logs', JSON.stringify(logs));
+      document.getElementById('newTask').value = '';
+      renderTasks();
+      renderLogs(); // Add commentMore actions
+    };
+
     const renderLogs = () => {
-      // You can implement logs rendering here later
+      const logDiv = document.getElementById('logs'); //Add commentMore actions
+      logDiv.innerHTML = '';
+      Object.keys(logs).sort().reverse().forEach(date => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        const detailId = `log-details-${date}`;
+        item.innerHTML = `<div><strong>${date}</strong><br>Tasks: ${logs[date].tasks.length}, Expenses: ${logs[date].expenses.length}</div>
+                          <div>
+                            <button onclick="toggleLogDetails('${detailId}')">View Log</button>
+                            <button class="delete-btn" onclick="deleteLog('${date}')">Delete</button>
+                          </div>
+                          <div id="${detailId}" class="log-details" style="display: none;"></div>`;
+        logDiv.appendChild(item);
+      });
     };
 
     renderTasks();
